@@ -1,3 +1,4 @@
+import { buildSearchApiUrl } from '@/lib/search-query.client';
 import { SearchResult } from '@/lib/types';
 
 type SearchCachePayload = {
@@ -25,7 +26,8 @@ async function fetchSearchResults(query: string) {
   const cached = getCachedSearchResults(query);
   if (cached) return cached;
 
-  const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { cache: 'no-store' });
+  const searchUrl = await buildSearchApiUrl('/api/search', query);
+  const res = await fetch(searchUrl, { cache: 'no-store' });
   if (!res.ok) throw new Error('搜索播放源失败');
   const data = await res.json();
   return (data.results || []) as SearchResult[];

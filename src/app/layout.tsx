@@ -17,6 +17,7 @@ import { DownloadPanel } from '../components/DownloadPanel';
 import { GlobalErrorIndicator } from '../components/GlobalErrorIndicator';
 import RouteScrollReset from '../components/RouteScrollReset';
 import { SiteProvider } from '../components/SiteProvider';
+import { TaiwanLocaleProvider } from '../components/TaiwanLocaleProvider';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { TokenRefreshManager } from '../components/TokenRefreshManager';
 import TopProgressBar from '../components/TopProgressBar';
@@ -31,14 +32,14 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
   const config = await getConfig();
-  let siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'MoonTVPlus';
+  let siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'MoonTVPlus-TW';
   if (storageType !== 'localstorage') {
     siteName = config.SiteConfig.SiteName;
   }
 
   return {
     title: siteName,
-    description: '影视聚合',
+    description: '影音聚合',
     manifest: '/manifest.json',
     // 供配套浏览器扩展（moontvplus-extension）识别本站部署（勿删）
     other: {
@@ -64,10 +65,10 @@ export default async function RootLayout({
 }) {
   const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
 
-  let siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'MoonTVPlus';
+  let siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'MoonTVPlus-TW';
   let announcement =
     process.env.ANNOUNCEMENT ||
-    '本网站仅提供影视信息搜索服务，所有内容均来自第三方网站。本站不存储任何视频资源，不对任何内容的准确性、合法性、完整性负责。';
+    '本網站僅提供影音資訊搜尋服務，所有內容均來自第三方網站。本站不儲存任何影片資源，不對任何內容的正確性、合法性、完整性負責。';
   // 公告显示模式：从环境变量读取，数据库模式下由管理面板配置覆盖
   let announcementDisplayMode: 'once' | 'every' =
     process.env.ANNOUNCEMENT_DISPLAY_MODE === 'every' ? 'every' : 'once';
@@ -351,7 +352,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang='zh-CN' data-moontvplus='1' suppressHydrationWarning>
+    <html lang='zh-TW' data-moontvplus='1' data-locale='zh-TW' suppressHydrationWarning>
       <head>
         {/* 配套 moontvplus-extension 识别指纹；仅本项目部署站应带此标记 */}
         <meta name='moontvplus-site' content='1' />
@@ -429,7 +430,9 @@ export default async function RootLayout({
             <WatchRoomProvider>
               <DownloadProvider>
                 <StartupCacheCleanup />
-                {children}
+                <TaiwanLocaleProvider>
+                  {children}
+                </TaiwanLocaleProvider>
                 <GlobalErrorIndicator />
                 <ChatFloatingWindow />
                 <DownloadBubble />

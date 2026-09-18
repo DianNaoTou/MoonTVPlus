@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { buildSearchApiUrl } from '@/lib/search-query.client';
+
+import { useI18n } from '@/components/TaiwanLocaleProvider';
+
 interface SearchSuggestionsProps {
   query: string;
   isVisible: boolean;
@@ -23,6 +27,7 @@ export default function SearchSuggestions({
   onClose,
   onEnterKey,
 }: SearchSuggestionsProps) {
+  const { t } = useI18n();
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -41,17 +46,16 @@ export default function SearchSuggestions({
     abortControllerRef.current = controller;
 
     try {
-      const response = await fetch(
-        `/api/search/suggestions?q=${encodeURIComponent(searchQuery)}`,
-        {
-          signal: controller.signal,
-        }
+      const searchUrl = await buildSearchApiUrl(
+        '/api/search/suggestions',
+        searchQuery
       );
+      const response = await fetch(searchUrl, { signal: controller.signal });
       if (response.ok) {
         const data = await response.json();
         const apiSuggestions = data.suggestions.map(
           (item: { text: string }) => ({
-            text: item.text,
+            text: t(item.text),
             type: 'related' as const,
           })
         );
@@ -69,7 +73,7 @@ export default function SearchSuggestions({
         setSuggestions([]);
       }
     }
-  }, []);
+  }, [t]);
 
   // 防抖触发
   const debouncedFetchSuggestions = useCallback(

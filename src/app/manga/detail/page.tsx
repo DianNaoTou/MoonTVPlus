@@ -60,7 +60,7 @@ function formatChapterMeta(chapter: MangaChapter): string | null {
         : chapter.uploadDate * 1000;
     const date = new Date(timestamp);
     if (!Number.isNaN(date.getTime())) {
-      return date.toLocaleDateString('zh-CN');
+      return date.toLocaleDateString('zh-TW');
     }
   }
 

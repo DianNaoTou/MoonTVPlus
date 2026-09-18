@@ -13,6 +13,7 @@ import {
 
 import { isAnimeCategoryText } from '@/lib/anime-keyword-expr';
 import { ApiSite } from '@/lib/config';
+import { getSourceSearchQuery } from '@/lib/search-query.client';
 import { appendSpecialSourceParam } from '@/lib/special-source.client';
 import { SearchResult } from '@/lib/types';
 
@@ -299,8 +300,9 @@ function SourceSearchPageClient() {
     const searchVideos = async () => {
       setIsLoadingVideos(true);
       try {
+        const sourceKeyword = await getSourceSearchQuery(searchKeyword);
         const response = await fetch(
-          appendSpecialSourceParam(`/api/source-search/search?source=${encodeURIComponent(selectedSource)}&keyword=${encodeURIComponent(searchKeyword)}&page=${currentPage}`)
+          appendSpecialSourceParam(`/api/source-search/search?source=${encodeURIComponent(selectedSource)}&keyword=${encodeURIComponent(sourceKeyword)}&page=${currentPage}`)
         );
         const data = await response.json();
         if (data.results && Array.isArray(data.results)) {

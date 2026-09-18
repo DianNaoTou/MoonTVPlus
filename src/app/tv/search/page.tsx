@@ -4,7 +4,13 @@ import { Film, Loader2, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 
+import type { ChineseConverter } from '@/lib/chinese-converter';
+import {
+  loadTraditionalToSimplifiedConverter,
+  toSimplifiedSearchQuery,
+} from '@/lib/chinese-converter';
 import { addSearchHistory, getSearchHistory } from '@/lib/db.client';
+import { buildSearchApiUrl } from '@/lib/search-query.client';
 import { SearchResult } from '@/lib/types';
 import { processImageUrl } from '@/lib/utils';
 
@@ -45,8 +51,8 @@ type TVSearchDisplayItem = {
   isAggregate: boolean;
 };
 
-function normalizeTitle(title: string) {
-  return title
+function normalizeTitle(title: string, converter: ChineseConverter | null) {
+  return toSimplifiedSearchQuery(title, converter)
     .trim()
     .toLowerCase()
     .replace(/[第\s._\-:：]+/g, '')
@@ -79,11 +85,16 @@ export default function TVSearchPage() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState('');
   const [error, setError] = useState('');
+  const [titleConverter, setTitleConverter] =
+    useState<ChineseConverter | null>(null);
   const firstResultRef = useRef<HTMLButtonElement | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     getSearchHistory().then(setHistory).catch(() => setHistory([]));
+    void loadTraditionalToSimplifiedConverter().then((converter) => {
+      setTitleConverter(() => converter);
+    });
   }, []);
 
   const runSearch = (value: string) => {
@@ -95,7 +106,8 @@ export default function TVSearchPage() {
     setError('');
     setResults([]);
     addSearchHistory(q).catch(() => undefined);
-    fetch(`/api/search?q=${encodeURIComponent(q)}`)
+    buildSearchApiUrl('/api/search', q)
+      .then((url) => fetch(url))
       .then((response) => {
         if (!response.ok) throw new Error('搜索失败');
         return response.json();
@@ -121,7 +133,7 @@ export default function TVSearchPage() {
     const order: string[] = [];
 
     results.forEach((item) => {
-      const key = `${normalizeTitle(item.title)}-${getResultType(item)}-${getValidYear(item)}`;
+      const key = `${normalizeTitle(item.title, titleConverter)}-${getResultType(item)}-${getValidYear(item)}`;
       if (!groups.has(key)) {
         groups.set(key, []);
         order.push(key);
@@ -150,7 +162,7 @@ export default function TVSearchPage() {
         isAggregate: group.length > 1,
       };
     });
-  }, [results]);
+  }, [results, titleConverter]);
 
   useEffect(() => {
     if (loading || error || displayResults.length === 0) return;

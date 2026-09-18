@@ -5,15 +5,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getAvailableApiSites, getConfig } from '@/lib/config';
 import { searchFromApi } from '@/lib/downstream';
-import { hasFeaturePermission } from '@/lib/permissions';
-import { yellowWords } from '@/lib/yellow';
 import { getProxyToken } from '@/lib/emby-token';
+import { hasFeaturePermission } from '@/lib/permissions';
+import { getSearchTerms } from '@/lib/search-query';
 import {
   executeSavedSourceScript,
   listEnabledSourceScripts,
   normalizeScriptSearchResults,
   normalizeScriptSources,
 } from '@/lib/source-script';
+import { yellowWords } from '@/lib/yellow';
 
 export const runtime = 'nodejs';
 
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q');
+  const { displayQuery: query, sourceQuery } = getSearchTerms(searchParams);
   const includeSpecialSources = searchParams.get('special') === '1';
   const privateOnly = searchParams.get('privateOnly') === '1';
 
@@ -366,7 +367,7 @@ export async function GET(request: NextRequest) {
         try {
           // 添加超时控制
           const searchPromise = Promise.race([
-            searchFromApi(site, query),
+            searchFromApi(site, sourceQuery),
             new Promise((_, reject) =>
               setTimeout(() => reject(new Error(`${site.name} timeout`)), 20000)
             ),
@@ -480,7 +481,7 @@ export async function GET(request: NextRequest) {
                   key: script.key,
                   hook: 'search',
                   payload: {
-                    keyword: query,
+                    keyword: sourceQuery,
                     page: 1,
                     sourceId: source.id,
                   },

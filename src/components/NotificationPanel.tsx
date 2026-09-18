@@ -256,7 +256,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                       {notification.message}
                     </p>
                     <p className='text-xs text-gray-500 dark:text-gray-500'>
-                      {new Date(notification.timestamp).toLocaleString('zh-CN')}
+                      {new Date(notification.timestamp).toLocaleString('zh-TW')}
                     </p>
                   </div>
 

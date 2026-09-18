@@ -416,8 +416,8 @@ export function OfflineDownloadPanel({ isOpen, onClose }: OfflineDownloadPanelPr
 
                 {/* 时间信息 */}
                 <div className='flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3'>
-                  <span>创建: {new Date(task.createdAt).toLocaleString('zh-CN')}</span>
-                  <span>更新: {new Date(task.updatedAt).toLocaleString('zh-CN')}</span>
+                  <span>建立：{new Date(task.createdAt).toLocaleString('zh-TW')}</span>
+                  <span>更新：{new Date(task.updatedAt).toLocaleString('zh-TW')}</span>
                 </div>
 
                 {/* 操作按钮 */}

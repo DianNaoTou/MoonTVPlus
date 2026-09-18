@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getAvailableApiSites, getCacheTime, getConfig } from '@/lib/config';
 import { searchFromApi } from '@/lib/downstream';
+import { getSearchTerms, isExactSearchTitle } from '@/lib/search-query';
 import {
   executeSavedSourceScript,
   listEnabledSourceScripts,
@@ -21,7 +22,8 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q');
+  const searchTerms = getSearchTerms(searchParams);
+  const { displayQuery: query, sourceQuery } = searchTerms;
   const resourceId = searchParams.get('resourceId');
 
   if (!query || !resourceId) {
@@ -58,7 +60,7 @@ export async function GET(request: NextRequest) {
             key: matchedScript.key,
             hook: 'search',
             payload: {
-              keyword: query,
+              keyword: sourceQuery,
               page: 1,
               sourceId: source.id,
             },
@@ -74,7 +76,9 @@ export async function GET(request: NextRequest) {
         })
       );
 
-      let result = scriptResults.flat().filter((r) => r.title === query);
+      let result = scriptResults
+        .flat()
+        .filter((r) => isExactSearchTitle(r.title, searchTerms));
       if (!config.SiteConfig.DisableYellowFilter) {
         result = result.filter((item) => {
           const typeName = item.type_name || '';
@@ -118,8 +122,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const results = await searchFromApi(targetSite, query);
-    let result = results.filter((r) => r.title === query);
+    const results = await searchFromApi(targetSite, sourceQuery);
+    let result = results.filter((r) =>
+      isExactSearchTitle(r.title, searchTerms)
+    );
     if (!config.SiteConfig.DisableYellowFilter) {
       result = result.filter((result) => {
         const typeName = result.type_name || '';

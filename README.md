@@ -1,5 +1,7 @@
 # MoonTVPlus
 
+> 台灣繁體中文版本說明：請見 [README-TW.md](README-TW.md)。以下保留原專案說明與作者資訊。
+
 <div align="center">
   <img src="public/logo.png" alt="MoonTVPlus Logo" width="120">
 </div>

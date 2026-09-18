@@ -106,7 +106,7 @@ interface TMDBTVAiringTodayResponse {
  * 获取即将上映的电影
  * @param apiKey - TMDB API Key
  * @param page - 页码
- * @param region - 地区代码，默认 CN (中国)
+ * @param region - 地區代碼，預設 TW（台灣）
  * @param proxy - 代理服务器地址
  * @param reverseProxyBaseUrl - 反代 Base URL
  * @returns 即将上映的电影列表
@@ -114,7 +114,7 @@ interface TMDBTVAiringTodayResponse {
 export async function getTMDBUpcomingMovies(
   apiKey: string,
   page = 1,
-  region = 'CN',
+  region = 'TW',
   proxy?: string,
   reverseProxyBaseUrl?: string
 ): Promise<{ code: number; list: TMDBMovie[] }> {
@@ -125,7 +125,7 @@ export async function getTMDBUpcomingMovies(
     }
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/movie/upcoming?api_key=${actualKey}&language=zh-CN&page=${page}&region=${region}`;
+    const url = `${baseUrl}/3/movie/upcoming?api_key=${actualKey}&language=zh-TW&page=${page}&region=${region}`;
 
     // 使用统一的 fetch 函数
     const response = await universalFetch(url, proxy);
@@ -169,7 +169,7 @@ export async function getTMDBUpcomingTVShows(
 
     // 使用 on_the_air 接口获取正在播出的电视剧
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/tv/on_the_air?api_key=${actualKey}&language=zh-CN&page=${page}`;
+    const url = `${baseUrl}/3/tv/on_the_air?api_key=${actualKey}&language=zh-TW&page=${page}`;
 
     // 使用统一的 fetch 函数
     const response = await universalFetch(url, proxy);
@@ -210,7 +210,7 @@ export async function getTMDBUpcomingContent(
 
     // 并行获取电影和电视剧数据
     const [moviesResult, tvShowsResult] = await Promise.all([
-      getTMDBUpcomingMovies(apiKey, 1, 'CN', proxy, reverseProxyBaseUrl),
+      getTMDBUpcomingMovies(apiKey, 1, 'TW', proxy, reverseProxyBaseUrl),
       getTMDBUpcomingTVShows(apiKey, 1, proxy, reverseProxyBaseUrl),
     ]);
 
@@ -425,7 +425,7 @@ export async function getTMDBTrendingContent(
 
     // 获取本周热门内容（电影+电视剧）
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/trending/all/week?api_key=${actualKey}&language=zh-CN`;
+    const url = `${baseUrl}/3/trending/all/week?api_key=${actualKey}&language=zh-TW`;
 
     const response = await universalFetch(url, proxy);
 
@@ -552,7 +552,7 @@ export async function searchTMDBMulti(
     }
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/search/multi?api_key=${actualKey}&language=zh-CN&query=${encodeURIComponent(query)}&page=1`;
+    const url = `${baseUrl}/3/search/multi?api_key=${actualKey}&language=zh-TW&query=${encodeURIComponent(query)}&page=1`;
 
     const response = await universalFetch(url, proxy);
 
@@ -594,7 +594,7 @@ export async function getTMDBMovieRecommendations(
     }
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/movie/${movieId}/recommendations?api_key=${actualKey}&language=zh-CN&page=1`;
+    const url = `${baseUrl}/3/movie/${movieId}/recommendations?api_key=${actualKey}&language=zh-TW&page=1`;
 
     const response = await universalFetch(url, proxy);
 
@@ -636,7 +636,7 @@ export async function getTMDBTVRecommendations(
     }
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/tv/${tvId}/recommendations?api_key=${actualKey}&language=zh-CN&page=1`;
+    const url = `${baseUrl}/3/tv/${tvId}/recommendations?api_key=${actualKey}&language=zh-TW&page=1`;
 
     const response = await universalFetch(url, proxy);
 
@@ -678,7 +678,7 @@ export async function getTMDBMovieDetails(
     }
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/movie/${movieId}?api_key=${actualKey}&language=zh-CN`;
+    const url = `${baseUrl}/3/movie/${movieId}?api_key=${actualKey}&language=zh-TW`;
 
     const response = await universalFetch(url, proxy);
 
@@ -720,7 +720,7 @@ export async function getTMDBTVDetails(
     }
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/tv/${tvId}?api_key=${actualKey}&language=zh-CN`;
+    const url = `${baseUrl}/3/tv/${tvId}?api_key=${actualKey}&language=zh-TW`;
 
     const response = await universalFetch(url, proxy);
 
@@ -764,7 +764,7 @@ export async function getTMDBCredits(
     }
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/${mediaType}/${mediaId}/credits?api_key=${actualKey}&language=zh-CN`;
+    const url = `${baseUrl}/3/${mediaType}/${mediaId}/credits?api_key=${actualKey}&language=zh-TW`;
 
     const response = await universalFetch(url, proxy);
 

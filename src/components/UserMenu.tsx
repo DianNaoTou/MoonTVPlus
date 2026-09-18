@@ -221,7 +221,7 @@ export const UserMenu: React.FC = () => {
   const [danmakuTraditionalToSimplified, setDanmakuTraditionalToSimplified] =
     useState(false);
   const [searchTraditionalToSimplified, setSearchTraditionalToSimplified] =
-    useState(false);
+    useState(true);
   const [exactSearch, setExactSearch] = useState(true);
   const [maxConcurrentDownloads, setMaxConcurrentDownloads] = useState(6);
   const [downloadThreadsPerTask, setDownloadThreadsPerTask] = useState(6);
@@ -866,6 +866,10 @@ export const UserMenu: React.FC = () => {
         setSearchTraditionalToSimplified(
           savedSearchTraditionalToSimplified === 'true'
         );
+      } else {
+        // 台灣版預設自動替外部來源產生簡體搜尋詞，但保留繁體輸入與網址。
+        setSearchTraditionalToSimplified(true);
+        localStorage.setItem('searchTraditionalToSimplified', 'true');
       }
 
       // 加载精确搜索设置
@@ -2200,7 +2204,7 @@ export const UserMenu: React.FC = () => {
     setHomeContinueWatchingEnabled(true);
     setHomeModules(defaultHomeModules);
     setDanmakuTraditionalToSimplified(false);
-    setSearchTraditionalToSimplified(false);
+    setSearchTraditionalToSimplified(true);
 
     if (typeof window !== 'undefined') {
       localStorage.setItem('defaultAggregateSearch', JSON.stringify(true));
@@ -2239,7 +2243,7 @@ export const UserMenu: React.FC = () => {
       localStorage.setItem('homeContinueWatchingEnabled', 'true');
       localStorage.setItem('homeModules', JSON.stringify(defaultHomeModules));
       localStorage.setItem('danmakuTraditionalToSimplified', 'false');
-      localStorage.setItem('searchTraditionalToSimplified', 'false');
+      localStorage.setItem('searchTraditionalToSimplified', 'true');
       window.dispatchEvent(new CustomEvent('homeModulesUpdated'));
     }
   };
@@ -2440,7 +2444,7 @@ export const UserMenu: React.FC = () => {
         setDanmakuTraditionalToSimplified(false);
         break;
       case 'searchTraditionalToSimplified':
-        setSearchTraditionalToSimplified(false);
+        setSearchTraditionalToSimplified(true);
         break;
       case 'exactSearch':
         setExactSearch(true);
@@ -4094,14 +4098,14 @@ export const UserMenu: React.FC = () => {
                     </label>
                   </div>
 
-                  {/* 搜索繁体转简体 */}
+                  {/* 外部來源搜尋詞繁轉簡 */}
                   <div className='flex items-center justify-between'>
                     <div>
                       <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-                        搜索繁体转简体
+                        外部來源搜尋詞繁轉簡
                       </h4>
                       <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                        搜索时自动将繁体中文转换为简体中文
+                        保留繁體輸入，僅替只支援簡體的影片來源產生簡體搜尋詞
                       </p>
                     </div>
                     <label className='flex items-center cursor-pointer'>

@@ -33,7 +33,7 @@ export function formatTimeToHHMM(timeString: string): string {
     if (isNaN(date.getTime())) {
       return timeString; // 如果解析失败，返回原始字符串
     }
-    return date.toLocaleTimeString('zh-CN', {
+    return date.toLocaleTimeString('zh-TW', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,

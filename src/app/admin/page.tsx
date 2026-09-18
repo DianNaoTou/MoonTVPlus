@@ -2177,19 +2177,19 @@ const UserConfig = ({
                                   <div>
                                     登录时间:{' '}
                                     {new Date(device.createdAt).toLocaleString(
-                                      'zh-CN'
+                                      'zh-TW'
                                     )}
                                   </div>
                                   <div>
                                     最后活跃:{' '}
                                     {new Date(device.lastUsed).toLocaleString(
-                                      'zh-CN'
+                                      'zh-TW'
                                     )}
                                   </div>
                                   <div>
                                     过期时间:{' '}
                                     {new Date(device.expiresAt).toLocaleString(
-                                      'zh-CN'
+                                      'zh-TW'
                                     )}
                                   </div>
                                 </div>
@@ -3810,7 +3810,7 @@ const OpenListConfigComponent = ({
 
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return '未刷新';
-    return new Date(timestamp).toLocaleString('zh-CN');
+    return new Date(timestamp).toLocaleString('zh-TW');
   };
 
   return (
@@ -9278,7 +9278,7 @@ const VideoSourceScriptLab = () => {
                   </div>
                   <div className='mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400'>
                     <span>
-                      {new Date(script.updatedAt).toLocaleString('zh-CN')}
+                      {new Date(script.updatedAt).toLocaleString('zh-TW')}
                     </span>
                     <button
                       onClick={(e) => {
@@ -9649,7 +9649,7 @@ const ConfigFileComponent = ({
           <div className='text-sm text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-full'>
             最后更新:{' '}
             {lastCheckTime
-              ? new Date(lastCheckTime).toLocaleString('zh-CN')
+              ? new Date(lastCheckTime).toLocaleString('zh-TW')
               : '从未更新'}
           </div>
         </div>
@@ -15850,7 +15850,7 @@ const MovieRequestsComponent = ({
                       求片人数: {req.requestCount} 人
                     </p>
                     <p className='text-xs text-gray-500 dark:text-gray-500 mt-1'>
-                      {new Date(req.createdAt).toLocaleString('zh-CN')}
+                      {new Date(req.createdAt).toLocaleString('zh-TW')}
                     </p>
                     {req.requestedBy && (
                       <p className='text-xs text-gray-500 dark:text-gray-500 mt-1'>

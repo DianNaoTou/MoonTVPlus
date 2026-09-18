@@ -7,6 +7,7 @@ import { getAvailableApiSites, getCacheTime, getConfig } from '@/lib/config';
 import { searchFromApi } from '@/lib/downstream';
 import { getProxyToken } from '@/lib/emby-token';
 import { hasFeaturePermission } from '@/lib/permissions';
+import { getSearchTerms } from '@/lib/search-query';
 import {
   executeSavedSourceScript,
   listEnabledSourceScripts,
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q');
+  const { displayQuery: query, sourceQuery } = getSearchTerms(searchParams);
   const includeSpecialSources = searchParams.get('special') === '1';
   const privateOnly = searchParams.get('privateOnly') === '1';
 
@@ -184,7 +185,7 @@ export async function GET(request: NextRequest) {
   // 添加超时控制和错误处理，避免慢接口拖累整体响应
   const searchPromises = apiSites.map((site) =>
     Promise.race([
-      searchFromApi(site, query),
+      searchFromApi(site, sourceQuery),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error(`${site.name} timeout`)), 20000)
       ),
@@ -212,7 +213,7 @@ export async function GET(request: NextRequest) {
                 key: script.key,
                 hook: 'search',
                 payload: {
-                  keyword: query,
+                  keyword: sourceQuery,
                   page: 1,
                   sourceId: source.id,
                 },

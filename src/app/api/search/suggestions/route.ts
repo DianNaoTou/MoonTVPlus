@@ -6,6 +6,7 @@ import { AdminConfig } from '@/lib/admin.types';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getAvailableApiSites, getConfig } from '@/lib/config';
 import { searchFromApi } from '@/lib/downstream';
+import { getSearchTerms } from '@/lib/search-query';
 import { yellowWords } from '@/lib/yellow';
 
 export const runtime = 'nodejs';
@@ -20,14 +21,18 @@ export async function GET(request: NextRequest) {
 
     const config = await getConfig();
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q')?.trim();
+    const { displayQuery: query, sourceQuery } = getSearchTerms(searchParams);
 
     if (!query) {
       return NextResponse.json({ suggestions: [] });
     }
 
     // 生成建议
-    const suggestions = await generateSuggestions(config, query, authInfo.username);
+    const suggestions = await generateSuggestions(
+      config,
+      sourceQuery,
+      authInfo.username
+    );
 
     // 从配置中获取缓存时间，如果没有配置则使用默认值300秒（5分钟）
     const cacheTime = config.SiteConfig.SiteInterfaceCacheTime || 300;

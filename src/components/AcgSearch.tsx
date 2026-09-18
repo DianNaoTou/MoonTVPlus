@@ -578,7 +578,7 @@ export default function AcgSearch({
               {/* 发布时间 */}
               <div className='mb-2 text-xs text-gray-500 dark:text-gray-400'>
                 {item.pubDate
-                  ? new Date(item.pubDate).toLocaleString('zh-CN')
+                  ? new Date(item.pubDate).toLocaleString('zh-TW')
                   : ''}
               </div>
 

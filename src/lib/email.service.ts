@@ -105,10 +105,10 @@ export class EmailService {
     toEmail: string,
     siteName?: string
   ): Promise<void> {
-    const displayName = siteName || 'MoonTVPlus';
+    const displayName = siteName || 'MoonTVPlus-TW';
     await this.send(emailConfig, {
       to: toEmail,
-      subject: `测试邮件 - ${displayName}`,
+      subject: `測試郵件 - ${displayName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -164,15 +164,15 @@ export class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1>📧 测试邮件</h1>
+              <h1>📧 測試郵件</h1>
             </div>
             <div class="content">
-              <p>这是一封来自 ${displayName} 的测试邮件。</p>
-              <p>如果您收到这封邮件，说明邮件配置正确！</p>
-              <p style="color: #666;">发送时间: ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</p>
+              <p>這是一封來自 ${displayName} 的測試郵件。</p>
+              <p>如果您收到這封郵件，代表郵件設定正確！</p>
+              <p style="color: #666;">寄送時間：${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}</p>
             </div>
             <div class="footer">
-              <p>此邮件由 ${displayName} 自动发送</p>
+              <p>此郵件由 ${displayName} 自動寄送</p>
             </div>
           </div>
         </body>

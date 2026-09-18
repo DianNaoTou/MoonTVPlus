@@ -117,8 +117,8 @@ export function DeviceManagementPanel({
                               )}
                             </div>
                             <div className='space-y-1 text-xs text-gray-500 dark:text-gray-400'>
-                              <div>登录时间: {new Date(device.createdAt).toLocaleString('zh-CN')}</div>
-                              <div>最后活跃: {new Date(device.lastUsed).toLocaleString('zh-CN')}</div>
+                              <div>登入時間：{new Date(device.createdAt).toLocaleString('zh-TW')}</div>
+                              <div>最後使用：{new Date(device.lastUsed).toLocaleString('zh-TW')}</div>
                             </div>
                           </div>
                           {!device.isCurrent && (

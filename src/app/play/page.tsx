@@ -9,6 +9,11 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { isAnimeCategoryText } from '@/lib/anime-keyword-expr';
 import { createAnime4KRenderer } from '@/lib/anime4k';
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
+import type { ChineseConverter } from '@/lib/chinese-converter';
+import {
+  loadTraditionalToSimplifiedConverter,
+  toSimplifiedSearchQuery,
+} from '@/lib/chinese-converter';
 import {
   clearDanmakuCacheByTitle,
   convertDanmakuFormat,
@@ -50,20 +55,21 @@ import {
 } from '@/lib/db.client';
 import { getDoubanDetail } from '@/lib/douban.client';
 import { isEpisodeHiddenByFilter, normalizeEpisodeFilterConfig } from '@/lib/episode-filter';
-import { appendSpecialSourceParam, isSpecialSourcesEnabledOnDevice } from '@/lib/special-source.client';
 import {
   buildEpisodeProgressContentKey,
   loadLocalEpisodeProgress,
   pruneLocalEpisodeProgressStorage,
   saveLocalEpisodeProgress,
 } from '@/lib/episode-progress';
+import { getIndexedDBVideoPlaybackUrl } from '@/lib/indexeddb-video-cache';
 import { isNetdiskSource, normalizeNetdiskSource } from '@/lib/netdisk/source';
 import {
   getRecommendationCache,
   recommendationCacheKeys,
   setRecommendationCache,
 } from '@/lib/recommendations/cache';
-import { getIndexedDBVideoPlaybackUrl } from '@/lib/indexeddb-video-cache';
+import { buildSearchApiUrl } from '@/lib/search-query.client';
+import { appendSpecialSourceParam, isSpecialSourcesEnabledOnDevice } from '@/lib/special-source.client';
 import {
   convertSubtitleFileToVttObjectUrl,
   CUSTOM_SUBTITLE_ACCEPT,
@@ -3136,7 +3142,7 @@ function PlayPageClient() {
   const refreshXiaoyaUrl = async (
     preferredHls?: any,
     preferredVideo?: HTMLVideoElement,
-    isScheduled: boolean = false
+    isScheduled = false
   ) => {
     // 防抖：距离上次刷新不足3秒则不刷新
     const now = Date.now();
@@ -4642,9 +4648,11 @@ function PlayPageClient() {
       }
     };
 
+    let sourceTitleConverter: ChineseConverter | null = null;
+
     // 规范化标题用于聚合（去除特殊符号、括号、空格和全角空格）
     const normalizeTitle = (title: string) => {
-      return title
+      return toSimplifiedSearchQuery(title, sourceTitleConverter)
         .replace(/[\s\u3000]/g, '') // 去除空格和全角空格
         .replace(/[()（）[\]【】{}「」『』<>《》]/g, '') // 去除各种括号
         .replace(/[^\w\u4e00-\u9fa5]/g, ''); // 去除特殊符号，保留字母、数字、下划线和中文
@@ -4842,6 +4850,7 @@ function PlayPageClient() {
     };
 
     const fetchSourcesData = async (query: string): Promise<SearchResult[]> => {
+      sourceTitleConverter = await loadTraditionalToSimplifiedConverter();
       // 根据搜索词获取全部源信息
       setHasCompletedSearchRequest(false);
       setFallbackRecommendations([]);
@@ -4865,9 +4874,8 @@ function PlayPageClient() {
         }
 
         // 没有缓存或只有 partial 缓存时，重新请求完整搜索结果
-        const response = await fetch(
-          appendSpecialSourceParam(`/api/search?q=${encodeURIComponent(query.trim())}`)
-        );
+        const searchUrl = await buildSearchApiUrl('/api/search', query.trim());
+        const response = await fetch(appendSpecialSourceParam(searchUrl));
         if (!response.ok) {
           throw new Error('搜索失败');
         }
@@ -4905,6 +4913,7 @@ function PlayPageClient() {
     };
 
     const initAll = async () => {
+      sourceTitleConverter = await loadTraditionalToSimplifiedConverter();
       if (currentSource === 'directplay') {
         if (!currentId) {
           setError('缺少直链地址');
@@ -9630,7 +9639,9 @@ function PlayPageClient() {
               try {
                 const playPromise = fallbackVideo.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
-                  playPromise.catch(() => {});
+                  playPromise.catch(() => {
+                    // 自動播放遭瀏覽器阻擋時維持暫停狀態。
+                  });
                 }
               } catch {
                 // ignore

@@ -68,7 +68,7 @@ function getRoleText(role?: AuthInfo['role']) {
 function formatDateTime(value?: number) {
   if (!value) return '当前会话';
   try {
-    return new Intl.DateTimeFormat('zh-CN', {
+    return new Intl.DateTimeFormat('zh-TW', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',

@@ -290,7 +290,7 @@ export async function fetchTMDBData(
     const baseUrl = tmdbReverseProxy || 'https://api.themoviedb.org';
     // 使用 TMDB API 获取详情
     // TMDB API: https://api.themoviedb.org/3/{type}/{id}
-    const url = `${baseUrl}/3/${params.type}/${params.id}?api_key=${actualKey}&language=zh-CN&append_to_response=keywords,similar`;
+    const url = `${baseUrl}/3/${params.type}/${params.id}?api_key=${actualKey}&language=zh-TW&append_to_response=keywords,similar`;
 
     console.log('📡 获取TMDB详情:', params.type, params.id);
 

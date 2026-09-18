@@ -162,7 +162,7 @@ export default function ChatFloatingWindow() {
 
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('zh-CN', {
+    return date.toLocaleTimeString('zh-TW', {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -538,10 +538,11 @@ export default function ChatFloatingWindow() {
             {chatMessages.map((msg) => (
               <div key={msg.id} className="flex flex-col gap-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-medium text-green-400">{msg.userName}</span>
+                  <span data-i18n-skip className="text-xs font-medium text-green-400">{msg.userName}</span>
                   <span className="text-xs text-gray-500">{formatTime(msg.timestamp)}</span>
                 </div>
                 <div
+                  data-i18n-skip
                   className={`max-w-[80%] rounded-lg px-3 py-2 ${
                     msg.type === 'emoji'
                       ? 'text-3xl'

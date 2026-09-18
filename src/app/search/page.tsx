@@ -26,14 +26,20 @@ import { createPortal } from 'react-dom';
 import { isAnimeCategoryText } from '@/lib/anime-keyword-expr';
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 import {
+  appendSourceQuery,
+  loadTraditionalToSimplifiedConverter,
+  toSimplifiedSearchQuery,
+} from '@/lib/chinese-converter';
+import {
   addSearchHistory,
   clearSearchHistory,
   deleteSearchHistory,
   getSearchHistory,
   subscribeToDataUpdates,
 } from '@/lib/db.client';
-import { SearchResult } from '@/lib/types';
+import { resolveSourceSearchQuery } from '@/lib/search-query.client';
 import { appendSpecialSourceParam, isSpecialSourcesEnabledOnDevice } from '@/lib/special-source.client';
+import { SearchResult } from '@/lib/types';
 import { processImageUrl } from '@/lib/utils';
 
 import AcgSearch from '@/components/AcgSearch';
@@ -48,7 +54,6 @@ import SearchResultFilter, {
 import SearchSuggestions from '@/components/SearchSuggestions';
 import VideoCard, { VideoCardHandle } from '@/components/VideoCard';
 import VirtualScrollableGrid from '@/components/VirtualScrollableGrid';
-import { loadTraditionalToSimplifiedConverter } from '@/lib/danmaku/traditional-to-simplified';
 
 const PANSOU_CLOUD_TYPE_OPTIONS = Object.entries(CLOUD_TYPE_NAMES).map(
   ([value, label]) => ({ value, label })
@@ -104,6 +109,7 @@ function SearchPageClient() {
   const submittedSearchQuery = searchParams.get('q')?.trim() || '';
   const currentQueryRef = useRef<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sourceSearchQuery, setSourceSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -360,7 +366,10 @@ function SearchPageClient() {
 
   // 规范化标题用于聚合（去除特殊符号、括号、空格和全角空格）
   const normalizeTitle = (title: string) => {
-    return title
+    const comparableTitle = converterRef.current
+      ? toSimplifiedSearchQuery(title, converterRef.current)
+      : title;
+    return comparableTitle
       .replace(/[\s\u3000]/g, '') // 去除空格和全角空格
       .replace(/[()（）[\]【】{}「」『』<>《》]/g, '') // 去除各种括号
       .replace(/[^\w\u4e00-\u9fa5]/g, ''); // 去除特殊符号，保留字母、数字、下划线和中文
@@ -412,14 +421,23 @@ function SearchPageClient() {
   };
 
   // 辅助函数：检查标题是否包含搜索词（用于精确搜索）
-  const titleContainsQuery = (title: string, query: string): boolean => {
+  const titleContainsQuery = (
+    title: string,
+    query: string,
+    alternateQuery = sourceSearchQuery
+  ): boolean => {
     if (!exactSearch) return true; // 如果未开启精确搜索，不过滤
     if (!query || !title) return true; // 如果没有搜索词或标题，不过滤
 
     const normalizedTitle = title.toLowerCase();
     const normalizedQuery = query.toLowerCase();
 
-    return normalizedTitle.includes(normalizedQuery);
+    const normalizedAlternate = alternateQuery.toLowerCase();
+    return (
+      normalizedTitle.includes(normalizedQuery) ||
+      (normalizedAlternate !== normalizedQuery &&
+        normalizedTitle.includes(normalizedAlternate))
+    );
   };
 
   const allExactSearchResults = useMemo(() => {
@@ -428,7 +446,7 @@ function SearchPageClient() {
     return searchResults.filter((item) =>
       titleContainsQuery(item.title, submittedSearchQuery)
     );
-  }, [searchResults, submittedSearchQuery, exactSearch]);
+  }, [searchResults, submittedSearchQuery, sourceSearchQuery, exactSearch]);
 
   // 聚合后的结果（按标题和年份分组）
   const aggregatedResults = useMemo(() => {
@@ -703,7 +721,14 @@ function SearchPageClient() {
     ];
 
     return { categoriesAll, categoriesAgg };
-  }, [searchResults, aggregatedResults, exactSearch, filterAll, filterAgg]);
+  }, [
+    searchResults,
+    aggregatedResults,
+    exactSearch,
+    filterAll,
+    filterAgg,
+    sourceSearchQuery,
+  ]);
 
   // 非聚合：应用筛选与排序
   const filteredAllResults = useMemo(() => {
@@ -1199,38 +1224,10 @@ function SearchPageClient() {
       return;
     }
 
-    // 当搜索参数变化时更新搜索状态
-    let query = searchParams.get('q') || '';
-
-    // 如果开启了繁体转简体，进行转换
-    if (query && typeof window !== 'undefined') {
-      const searchTraditionalToSimplified = localStorage.getItem(
-        'searchTraditionalToSimplified'
-      );
-
-      if (searchTraditionalToSimplified === 'true' && converterRef.current) {
-        try {
-          const originalQuery = query;
-          query = converterRef.current(query);
-
-          // 如果转换后的文本与原文本不同，更新 URL
-          if (originalQuery !== query) {
-            const trimmedConverted = query.trim();
-            // 使用 replace 而不是 push，避免在历史记录中留下繁体版本
-            router.replace(
-              `/search?q=${encodeURIComponent(trimmedConverted)}${
-                searchParams.get('type')
-                  ? `&type=${searchParams.get('type')}`
-                  : ''
-              }`
-            );
-            return; // 等待 URL 更新后重新触发此 effect
-          }
-        } catch (error) {
-          console.error('[URL参数监听] 繁体转简体转换失败:', error);
-        }
-      }
-    }
+    // q 始終保留使用者輸入；sourceQ 僅送往只支援簡體的外部影片來源。
+    const query = searchParams.get('q') || '';
+    const sourceQuery = resolveSourceSearchQuery(query, converterRef.current);
+    setSourceSearchQuery(sourceQuery);
 
     currentQueryRef.current = query.trim();
 
@@ -1341,9 +1338,10 @@ function SearchPageClient() {
 
       if (currentFluidSearch) {
         // 流式搜索：打开新的流式连接
-        const searchUrl = `/api/search/ws?q=${encodeURIComponent(trimmed)}${
+        let searchUrl = `/api/search/ws?q=${encodeURIComponent(trimmed)}${
           privateLibraryOnly ? '&privateOnly=1' : ''
         }`;
+        searchUrl = appendSourceQuery(searchUrl, trimmed, sourceQuery);
         const es = new EventSource(appendSpecialSourceParam(searchUrl));
         eventSourceRef.current = es;
 
@@ -1449,9 +1447,10 @@ function SearchPageClient() {
         };
       } else {
         // 传统搜索：使用普通接口
-        const searchUrl = `/api/search?q=${encodeURIComponent(trimmed)}${
+        let searchUrl = `/api/search?q=${encodeURIComponent(trimmed)}${
           privateLibraryOnly ? '&privateOnly=1' : ''
         }`;
+        searchUrl = appendSourceQuery(searchUrl, trimmed, sourceQuery);
         fetch(appendSpecialSourceParam(searchUrl))
           .then((response) => response.json())
           .then((data) => {
@@ -1559,22 +1558,8 @@ function SearchPageClient() {
   // 搜索表单提交时触发，处理搜索逻辑
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    let trimmed = searchQuery.trim().replace(/\s+/g, ' ');
+    const trimmed = searchQuery.trim().replace(/\s+/g, ' ');
     if (!trimmed) return;
-
-    // 如果开启了繁体转简体，进行转换
-    if (typeof window !== 'undefined') {
-      const searchTraditionalToSimplified = localStorage.getItem(
-        'searchTraditionalToSimplified'
-      );
-      if (searchTraditionalToSimplified === 'true' && converterRef.current) {
-        try {
-          trimmed = converterRef.current(trimmed);
-        } catch (error) {
-          console.error('繁体转简体转换失败:', error);
-        }
-      }
-    }
 
     // 回显搜索框
     setSearchQuery(trimmed);
@@ -1600,21 +1585,7 @@ function SearchPageClient() {
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
-    let processedSuggestion = suggestion;
-
-    // 如果开启了繁体转简体，进行转换
-    if (typeof window !== 'undefined') {
-      const searchTraditionalToSimplified = localStorage.getItem(
-        'searchTraditionalToSimplified'
-      );
-      if (searchTraditionalToSimplified === 'true' && converterRef.current) {
-        try {
-          processedSuggestion = converterRef.current(suggestion);
-        } catch (error) {
-          console.error('繁体转简体转换失败:', error);
-        }
-      }
-    }
+    const processedSuggestion = suggestion;
 
     setSearchQuery(processedSuggestion);
     setShowSuggestions(false);

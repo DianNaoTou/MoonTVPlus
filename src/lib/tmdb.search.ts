@@ -72,7 +72,7 @@ export async function searchTMDB(
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
     // 使用 multi search 同时搜索电影和电视剧
-    let url = `${baseUrl}/3/search/multi?api_key=${actualKey}&language=zh-CN&query=${encodeURIComponent(query)}&page=1`;
+    let url = `${baseUrl}/3/search/multi?api_key=${actualKey}&language=zh-TW&query=${encodeURIComponent(query)}&page=1`;
 
     // 如果提供了年份，添加到搜索参数中
     if (year) {
@@ -151,7 +151,7 @@ export async function getTVSeasons(
     }
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/tv/${tvId}?api_key=${actualKey}&language=zh-CN`;
+    const url = `${baseUrl}/3/tv/${tvId}?api_key=${actualKey}&language=zh-TW`;
 
     const response = await universalFetch(url, proxy);
 
@@ -192,7 +192,7 @@ export async function getTVSeasonDetails(
     }
 
     const baseUrl = reverseProxyBaseUrl || DEFAULT_TMDB_BASE_URL;
-    const url = `${baseUrl}/3/tv/${tvId}/season/${seasonNumber}?api_key=${actualKey}&language=zh-CN`;
+    const url = `${baseUrl}/3/tv/${tvId}/season/${seasonNumber}?api_key=${actualKey}&language=zh-TW`;
 
     const response = await universalFetch(url, proxy);
 

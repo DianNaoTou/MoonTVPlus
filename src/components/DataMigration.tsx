@@ -338,7 +338,7 @@ const DataMigration = ({ onRefreshConfig }: DataMigrationProps) => {
           <div class="text-left">
             <p><strong>导入完成！</strong></p>
             <p class="mt-2">导入的用户数量: ${result.importedUsers}</p>
-            <p>备份时间: ${new Date(result.timestamp).toLocaleString('zh-CN')}</p>
+            <p>備份時間: ${new Date(result.timestamp).toLocaleString('zh-TW')}</p>
             <p>服务器版本: ${result.serverVersion || '未知版本'}</p>
             <p>漫画数据: ${result.importedMangaData ? '已导入' : '未导入'}</p>
             <p>电子书数据: ${result.importedBookData ? '已导入' : '未导入'}</p>
