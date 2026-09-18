@@ -16,6 +16,10 @@ MoonTVPlus-TW 是以 [DianNaoTou/MoonTVPlus](https://github.com/DianNaoTou/MoonT
 
 完整架構、盤點方式與上游同步注意事項請見 [docs/LOCALIZATION.zh-TW.md](docs/LOCALIZATION.zh-TW.md)，版本異動請見 [CHANGELOG-TW.md](CHANGELOG-TW.md)。原專案部署說明請見 [README.md](README.md)。
 
+## Docker 正式映像
+
+正式映像為 `ghcr.io/dianaotou/moontvplus-tw`，提供 `latest` 與可供固定版本、rollback 使用的明確版本 tag。Docker Compose、`docker run`、從 upstream 切換、更新、備份與 rollback 請見 [Docker 部署與升級指南](docs/DOCKER.zh-TW.md)。
+
 ## 授權與來源
 
 本分支未移除或取代原作者資訊。程式碼沿用原專案的 [LICENSE](LICENSE)；使用與散布時仍須遵守原授權條款。

@@ -2,7 +2,7 @@ name: MoonTVPlus-TW CI
 
 on:
   pull_request:
-    branches: [main, master]
+    branches: [moontvplus-tw]
   push:
     branches:
       - 'moontvplus-tw'
