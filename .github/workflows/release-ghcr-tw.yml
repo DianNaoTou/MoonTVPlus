@@ -109,7 +109,7 @@ jobs:
           file: ./Dockerfile
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ env.IMAGE_NAME }},name-canonical=true,push=true
+          outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=moontvplus-tw-${{ env.PLATFORM_NAME }}
           cache-to: type=gha,mode=max,scope=moontvplus-tw-${{ env.PLATFORM_NAME }}
           provenance: mode=max
