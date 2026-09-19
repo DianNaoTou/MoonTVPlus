@@ -20,7 +20,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/dianaotou/moontvplus-tw
+  IMAGE_NAME: ghcr.io/diannaotou/moontvplus-tw
 
 jobs:
   validate:

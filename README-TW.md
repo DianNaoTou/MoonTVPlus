@@ -18,7 +18,7 @@ MoonTVPlus-TW 是以 [DianNaoTou/MoonTVPlus](https://github.com/DianNaoTou/MoonT
 
 ## Docker 正式映像
 
-正式映像為 `ghcr.io/dianaotou/moontvplus-tw`，提供 `latest` 與可供固定版本、rollback 使用的明確版本 tag。Docker Compose、`docker run`、從 upstream 切換、更新、備份與 rollback 請見 [Docker 部署與升級指南](docs/DOCKER.zh-TW.md)。
+正式映像為 `ghcr.io/diannaotou/moontvplus-tw`，提供 `latest` 與可供固定版本、rollback 使用的明確版本 tag。Docker Compose、`docker run`、從 upstream 切換、更新、備份與 rollback 請見 [Docker 部署與升級指南](docs/DOCKER.zh-TW.md)。
 
 ## 授權與來源
 

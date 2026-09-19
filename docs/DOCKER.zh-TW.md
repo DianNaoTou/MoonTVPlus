@@ -1,6 +1,6 @@
 # MoonTVPlus-TW Docker 部署與升級
 
-正式映像：`ghcr.io/dianaotou/moontvplus-tw`
+正式映像：`ghcr.io/diannaotou/moontvplus-tw`
 
 目前沿用 upstream MoonTVPlus 的完整 `Dockerfile`、啟動方式與資料介面。容器監聽 `3000`，預設 SQLite 檔案為 `/app/.data/moontv.db`，離線下載目錄為 `/data`。切換到 TW 映像時，請保留原本的 port、環境變數與 volume 對應。
 
@@ -11,7 +11,7 @@
 ```yaml
 services:
   moontvplus-tw:
-    image: ghcr.io/dianaotou/moontvplus-tw:1.0.0-phase1
+    image: ghcr.io/diannaotou/moontvplus-tw:1.0.0-phase1
     container_name: moontvplus-tw
     restart: unless-stopped
     ports:
@@ -52,14 +52,14 @@ docker run -d \
   -e PGID=1001 \
   -v "$PWD/data:/app/.data" \
   -v "$PWD/downloads:/data" \
-  ghcr.io/dianaotou/moontvplus-tw:1.0.0-phase1
+  ghcr.io/diannaotou/moontvplus-tw:1.0.0-phase1
 ```
 
 ## 從 upstream MoonTVPlus 切換到 TW
 
 1. 記錄目前使用的 image tag、port、所有環境變數與 volume 對應。
 2. 停止服務，備份資料庫與設定。SQLite 請備份整個掛載到 `/app/.data` 的目錄；Redis／Kvrocks／Postgres／Turso／Upstash 請使用該資料庫的原生備份或快照方式。
-3. 僅將 image 改為 `ghcr.io/dianaotou/moontvplus-tw:<版本>`，其餘設定先保持不變。
+3. 僅將 image 改為 `ghcr.io/diannaotou/moontvplus-tw:<版本>`，其餘設定先保持不變。
 4. 拉取映像並啟動，檢查 logs、登入、設定、收藏與播放紀錄。
 
 ```bash
@@ -77,7 +77,7 @@ docker compose logs --tail=200 moontvplus-tw
 正式部署建議固定版本，例如：
 
 ```yaml
-image: ghcr.io/dianaotou/moontvplus-tw:1.0.0-phase1
+image: ghcr.io/diannaotou/moontvplus-tw:1.0.0-phase1
 ```
 
 更新流程：
@@ -92,7 +92,7 @@ docker compose logs --tail=200 moontvplus-tw
 `latest` 會指向最近一次正式發布，適合測試或希望主動追蹤新版本的環境：
 
 ```yaml
-image: ghcr.io/dianaotou/moontvplus-tw:latest
+image: ghcr.io/diannaotou/moontvplus-tw:latest
 ```
 
 舊的明確版本 tag 會保留，以便回復容器程式版本。
@@ -118,7 +118,7 @@ docker compose up -d
 - `package.json` 版本例如為 `1.0.0-phase1`。
 - 發布 tag 必須為 `tw-v1.0.0-phase1`。
 - workflow 會驗證 tag commit 屬於 `moontvplus-tw`，且 tag 與 `package.json` 版本一致。
-- 成功後發布 `ghcr.io/dianaotou/moontvplus-tw:1.0.0-phase1` 和 `ghcr.io/dianaotou/moontvplus-tw:latest`，支援 `linux/amd64` 與 `linux/arm64`。
+- 成功後發布 `ghcr.io/diannaotou/moontvplus-tw:1.0.0-phase1` 和 `ghcr.io/diannaotou/moontvplus-tw:latest`，支援 `linux/amd64` 與 `linux/arm64`。
 - 若既有版本因暫時性錯誤發布失敗，可在 Actions 頁面手動執行相同 workflow，輸入與 `package.json` 相同的版本。手動重試只允許從目前 `moontvplus-tw` HEAD 發布，不會繞過分支及版本檢查。
 
 維護者發布指令：
