@@ -119,6 +119,7 @@ docker compose up -d
 - 發布 tag 必須為 `tw-v1.0.0-phase1`。
 - workflow 會驗證 tag commit 屬於 `moontvplus-tw`，且 tag 與 `package.json` 版本一致。
 - 成功後發布 `ghcr.io/dianaotou/moontvplus-tw:1.0.0-phase1` 和 `ghcr.io/dianaotou/moontvplus-tw:latest`，支援 `linux/amd64` 與 `linux/arm64`。
+- 若既有版本因暫時性錯誤發布失敗，可在 Actions 頁面手動執行相同 workflow，輸入與 `package.json` 相同的版本。手動重試只允許從目前 `moontvplus-tw` HEAD 發布，不會繞過分支及版本檢查。
 
 維護者發布指令：
 

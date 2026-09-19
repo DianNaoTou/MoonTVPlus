@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'tw-v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Retry an existing release version (must match package.json)'
+        required: true
+        type: string
 
 concurrency:
   group: ghcr-tw-release-${{ github.ref }}
@@ -35,24 +41,42 @@ jobs:
           git fetch origin moontvplus-tw
           git merge-base --is-ancestor "$GITHUB_SHA" origin/moontvplus-tw
 
-          tag_version="${GITHUB_REF_NAME#tw-v}"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ "$GITHUB_SHA" != "$(git rev-parse origin/moontvplus-tw)" ]]; then
+              echo "Manual releases must run from the current moontvplus-tw head" >&2
+              exit 1
+            fi
+            release_version="${{ inputs.version }}"
+          else
+            release_version="${GITHUB_REF_NAME#tw-v}"
+          fi
+
           package_version="$(node -p "require('./package.json').version")"
-          if [[ "$tag_version" != "$package_version" ]]; then
-            echo "Tag version $tag_version does not match package.json version $package_version" >&2
+          if [[ "$release_version" != "$package_version" ]]; then
+            echo "Release version $release_version does not match package.json version $package_version" >&2
             exit 1
           fi
 
-          echo "version=$tag_version" >> "$GITHUB_OUTPUT"
+          echo "version=$release_version" >> "$GITHUB_OUTPUT"
 
-  publish:
+  build:
     needs: validate
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
+      - name: Prepare platform name
+        shell: bash
+        run: echo "PLATFORM_NAME=${{ matrix.platform }}" | sed 's|/|-|g' >> "$GITHUB_ENV"
+
       - name: Checkout release commit
         uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -61,7 +85,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract image metadata
@@ -69,9 +93,6 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ needs.validate.outputs.version }}
-            type=raw,value=latest
           labels: |
             org.opencontainers.image.title=MoonTVPlus-TW
             org.opencontainers.image.description=MoonTVPlus Taiwan Traditional Chinese localization
@@ -80,16 +101,64 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.licenses=MIT
 
-      - name: Build and push multi-platform image
+      - name: Build and push platform image by digest
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=moontvplus-tw-release
-          cache-to: type=gha,mode=max,scope=moontvplus-tw-release
+          outputs: type=image,name=${{ env.IMAGE_NAME }},name-canonical=true,push=true
+          cache-from: type=gha,scope=moontvplus-tw-${{ env.PLATFORM_NAME }}
+          cache-to: type=gha,mode=max,scope=moontvplus-tw-${{ env.PLATFORM_NAME }}
           provenance: mode=max
           sbom: true
+
+      - name: Export digest
+        shell: bash
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_NAME }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download platform digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push multi-platform manifest
+        working-directory: /tmp/digests
+        shell: bash
+        run: |
+          docker buildx imagetools create \
+            -t "${IMAGE_NAME}:${{ needs.validate.outputs.version }}" \
+            -t "${IMAGE_NAME}:latest" \
+            $(printf "${IMAGE_NAME}@sha256:%s " *)
+
+      - name: Inspect published image
+        run: docker buildx imagetools inspect "${IMAGE_NAME}:${{ needs.validate.outputs.version }}"
