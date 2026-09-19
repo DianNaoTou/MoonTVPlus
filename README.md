@@ -1,6 +1,8 @@
 # MoonTVPlus
 
-> 台灣繁體中文版本說明：請見 [README-TW.md](README-TW.md)。以下保留原專案說明與作者資訊。
+> **MoonTVPlus-TW 台灣繁體中文版**：正式 Docker 映像為 `ghcr.io/diannaotou/moontvplus-tw:latest`，固定版本為 `ghcr.io/diannaotou/moontvplus-tw:1.0.0-phase1`。帳號 `DianNaoTou` 轉小寫是 `diannaotou`（兩個連續的 `n`）。
+>
+> TW 維護分支：`moontvplus-tw`。請以 [TW 版本說明](https://github.com/DianNaoTou/MoonTVPlus/blob/moontvplus-tw/README-TW.md) 與 [最新 Docker 部署指南](https://github.com/DianNaoTou/MoonTVPlus/blob/moontvplus-tw/docs/DOCKER.zh-TW.md) 為準；舊 tag 的文件可能包含已更正的映像路徑。以下保留原專案說明與作者資訊，其中 upstream 映像並非 TW 映像。
 
 <div align="center">
   <img src="public/logo.png" alt="MoonTVPlus Logo" width="120">
