@@ -121,26 +121,36 @@ export function TaiwanLocaleProvider({
           defaultValue
         );
 
-      observer = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-          if (mutation.type === 'characterData') {
-            localizeTree(mutation.target, loadedConverter);
-          } else if (mutation.type === 'attributes') {
-            localizeElement(mutation.target as Element, loadedConverter);
-          } else {
-            mutation.addedNodes.forEach((node) =>
-              localizeTree(node, loadedConverter)
-            );
-          }
-        }
-      });
-      observer.observe(document.documentElement, {
+      const observerOptions: MutationObserverInit = {
         subtree: true,
         childList: true,
         characterData: true,
         attributes: true,
         attributeFilter: TRANSLATABLE_ATTRIBUTES,
+      };
+      observer = new MutationObserver((mutations) => {
+        // Do not observe our own synchronous translations. Otherwise even one
+        // non-idempotent translation can starve the browser's event loop.
+        observer?.disconnect();
+        try {
+          for (const mutation of mutations) {
+            if (mutation.type === 'characterData') {
+              localizeTree(mutation.target, loadedConverter);
+            } else if (mutation.type === 'attributes') {
+              localizeElement(mutation.target as Element, loadedConverter);
+            } else {
+              mutation.addedNodes.forEach((node) =>
+                localizeTree(node, loadedConverter)
+              );
+            }
+          }
+        } finally {
+          if (!disposed) {
+            observer?.observe(document.documentElement, observerOptions);
+          }
+        }
       });
+      observer.observe(document.documentElement, observerOptions);
     });
 
     return () => {

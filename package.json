@@ -1,6 +1,6 @@
 {
   "name": "moontvplus-tw",
-  "version": "1.0.0-phase1",
+  "version": "1.0.1-phase1",
   "private": true,
   "scripts": {
     "dev": "pnpm gen:manifest && node server.js",

@@ -127,12 +127,24 @@ const taiwanTerms: Array<readonly [string, string]> = [
   ['請輸入', '請輸入'],
 ];
 
-taiwanTerms.sort((a, b) => b[0].length - a[0].length);
+// Match complete translated terms before their substrings. A sequential replace
+// would match 域名 inside 網域名稱 again and grow the text on every DOM update.
+const termTranslations = new Map(taiwanTerms);
+for (const [, target] of taiwanTerms) {
+  termTranslations.set(target, target);
+}
+const termPattern = new RegExp(
+  Array.from(termTranslations.keys())
+    .sort((a, b) => b.length - a.length)
+    .map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|'),
+  'g'
+);
 
 export function applyTaiwanTerminology(text: string): string {
-  return taiwanTerms.reduce(
-    (result, [source, target]) => result.split(source).join(target),
-    text
+  return text.replace(
+    termPattern,
+    (term) => termTranslations.get(term) ?? term
   );
 }
 
