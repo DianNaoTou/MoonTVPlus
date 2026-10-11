@@ -23,3 +23,7 @@ MoonTVPlus-TW 是以 [DianNaoTou/MoonTVPlus](https://github.com/DianNaoTou/MoonT
 ## 授權與來源
 
 本分支未移除或取代原作者資訊。程式碼沿用原專案的 [LICENSE](LICENSE)；使用與散布時仍須遵守原授權條款。
+
+## 目前版本
+
+繁中版本 `1.1.0-tw.1`，完整同步上游 `226.1.0`。Docker 使用 `ghcr.io/diannaotou/moontvplus-tw:latest` 或固定 `:v1.1.0-tw.1`；升級步驟見 [Docker 文件](docs/DOCKER.zh-TW.md)。

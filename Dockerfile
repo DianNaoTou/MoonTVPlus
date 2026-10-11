@@ -2,19 +2,19 @@
 FROM node:24-alpine AS deps
 
 # 启用 corepack 并激活 pnpm（Node20 默认提供 corepack）
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 
 WORKDIR /app
 
 # 仅复制依赖清单，提高构建缓存利用率
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # 安装所有依赖（含 devDependencies，后续会裁剪）
 RUN pnpm install --frozen-lockfile
 
 # ---- 第 2 阶段：构建项目 ----
 FROM node:24-alpine AS builder
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 WORKDIR /app
 
 # 复制依赖
@@ -35,7 +35,7 @@ RUN pnpm deploy --filter=. --prod --legacy /tmp/prod-deps
 FROM node:24-alpine AS runner
 
 # 启用 corepack 并激活 pnpm（用于安装额外依赖）
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 
 # 安装 su-exec，用于在 entrypoint 中降权运行
 RUN apk add --no-cache su-exec

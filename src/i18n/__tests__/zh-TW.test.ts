@@ -29,6 +29,9 @@ describe('代理設定文字重複在地化', () => {
     ],
     ['自定义代理服务器地址', '自訂代理伺服器地址'],
     ['網域名稱', '網域名稱'],
+    ['优选偏好', '優先選擇偏好'],
+    ['手动矫正标题', '手動校正標題'],
+    ['倍数同步', '播放倍速同步'],
   ])('重複處理 %s 不會增長或改變文字', (source, expected) => {
     let result = localizeZhTW(source, converter);
     expect(result).toBe(expected);

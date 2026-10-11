@@ -11,7 +11,7 @@
 ```yaml
 services:
   moontvplus-tw:
-    image: ghcr.io/diannaotou/moontvplus-tw:1.0.1-phase1
+    image: ghcr.io/diannaotou/moontvplus-tw:1.1.0-tw.1
     container_name: moontvplus-tw
     restart: unless-stopped
     ports:
@@ -52,7 +52,7 @@ docker run -d \
   -e PGID=1001 \
   -v "$PWD/data:/app/.data" \
   -v "$PWD/downloads:/data" \
-  ghcr.io/diannaotou/moontvplus-tw:1.0.1-phase1
+  ghcr.io/diannaotou/moontvplus-tw:1.1.0-tw.1
 ```
 
 ## 從 upstream MoonTVPlus 切換到 TW
@@ -77,7 +77,7 @@ docker compose logs --tail=200 moontvplus-tw
 正式部署建議固定版本，例如：
 
 ```yaml
-image: ghcr.io/diannaotou/moontvplus-tw:1.0.1-phase1
+image: ghcr.io/diannaotou/moontvplus-tw:1.1.0-tw.1
 ```
 
 更新流程：
@@ -111,23 +111,20 @@ docker compose pull
 docker compose up -d
 ```
 
-## 正式發布規則
+## 滾動更新與版本紀錄
 
-普通 commit 與 pull request 只執行 CI 和 Docker build 驗證，不會發布映像。正式發布由 `moontvplus-tw` 分支上的受限制 Git tag 觸發：
+推送至 `moontvplus-tw` 後，Actions 先驗證型別、繁中相關 lint 與測試，再分別建置 `linux/amd64` 和 `linux/arm64`。兩個架構均建置成功後，才發布多架構映像及更新 `latest`。每次發布前需更新 `package.json`、`TW_VERSION.txt` 及 `src/lib/version.ts` 的 TW 版本。
 
-- `package.json` 版本例如為 `1.0.1-phase1`。
-- 發布 tag 必須為 `tw-v1.0.1-phase1`。
-- workflow 會驗證 tag commit 屬於 `moontvplus-tw`，且 tag 與 `package.json` 版本一致。
-- 成功後發布 `ghcr.io/diannaotou/moontvplus-tw:1.0.1-phase1` 和 `ghcr.io/diannaotou/moontvplus-tw:latest`，支援 `linux/amd64` 與 `linux/arm64`。
-- 若既有版本因暫時性錯誤發布失敗，可在 Actions 頁面手動執行相同 workflow，輸入與 `package.json` 相同的版本。手動重試只允許從目前 `moontvplus-tw` HEAD 發布，不會繞過分支及版本檢查。
+本次繁中版本為 `1.1.0-tw.1`，上游基準為 `226.1.0`（`c7c5a3648025b24c5d7c0c13eaef148cf8b29b48`）。
 
-維護者發布指令：
+- 舊版快照：`v1.0.1-phase1` 指向 `e84f8d430f943c75e243e2f52929adc4d60e5ed0`。
+- 新版 Tag：`v1.1.0-tw.1`，Actions 保留標籤且不覆寫既有標籤。
+- 映像標籤：`:1.1.0-tw.1`、`:v1.1.0-tw.1`、`:latest`。
+- 不建立 GitHub Release，也不區分測試／正式分支。
+- 手動重試仍可透過 Actions 的 workflow_dispatch，輸入與 package.json 一致的版本。
 
-```bash
-git switch moontvplus-tw
-git pull --ff-only origin moontvplus-tw
-git tag -a tw-v1.0.1-phase1 -m 'MoonTVPlus-TW 1.0.1-phase1'
-git push origin tw-v1.0.1-phase1
-```
+Dockerfile 固定 `pnpm@10.14.0`，與 CI 和 packageManager 一致，並在依賴安裝時帶入 pnpm-workspace.yaml 的原生套件建置設定，避免 pnpm 最新版的政策差異導致 SQLite 安裝或建置失敗。
 
-GitHub Actions 使用內建 `GITHUB_TOKEN` 與 `contents: read`、`packages: write` 最小權限，不需要 Repository secret 或私人 Token。首次發布後，若 GHCR package 預設不是公開可見，請在 GitHub package 設定中將 visibility 設為 Public。
+GitHub Actions 使用內建 `GITHUB_TOKEN`：`packages: write` 用於發布映像，`contents: write` 用於保留 Git Tag，不需私人 Token。既有 GHCR 套件沿用原權限；是否可匿名拉取須以實際驗證結果為準。
+
+上游已移除獨立觀影室伺服器，改用外部服務；若原部署使用這項功能，需依上游 README 重新設定。一般容器的 port、資料 volume 與資料後端沿用原設定。此次上游同步未修改 migrations，仍建議更新前備份原資料。
