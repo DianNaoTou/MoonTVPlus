@@ -1,0 +1,27 @@
+name: Preserve MoonTVPlus-TW snapshot
+on:
+  push:
+    branches: [moontvplus-tw]
+    paths: ['.github/workflows/snapshot-tw.yml']
+permissions:
+  contents: write
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preserve current version before integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          target=e84f8d430f943c75e243e2f52929adc4d60e5ed0
+          if git rev-parse refs/tags/v1.0.1-phase1 >/dev/null 2>&1; then
+            test "$(git rev-parse v1.0.1-phase1^{commit})" = "$target"
+          else
+            git tag -a v1.0.1-phase1 "$target" -m 'Snapshot before upstream v226.1.0 integration'
+            git push origin refs/tags/v1.0.1-phase1
+          fi
