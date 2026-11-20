@@ -19,7 +19,7 @@ describe('zh-TW 在地化', () => {
   });
 });
 
-describe('代理設定文字重複在地化', () => {
+describe('介面文字重複在地化', () => {
   const converter = Converter({ from: 'cn', to: 'tw' });
 
   it.each([
@@ -32,6 +32,11 @@ describe('代理設定文字重複在地化', () => {
     ['优选偏好', '優先選擇偏好'],
     ['手动矫正标题', '手動校正標題'],
     ['倍数同步', '播放倍速同步'],
+    ['禁用短剧竖屏模式', '停用短劇直式播放'],
+    ['测速并选择推荐线路', '測速並選擇建議線路'],
+    ['备用 OpenList 源列表', '備用 OpenList 來源清單'],
+    ['拉取配置代理', '取得設定的代理伺服器'],
+    ['环境不支持', '目前環境不支援'],
   ])('重複處理 %s 不會增長或改變文字', (source, expected) => {
     let result = localizeZhTW(source, converter);
     expect(result).toBe(expected);
